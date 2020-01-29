@@ -92,4 +92,44 @@ namespace NATS.Client.Internals
             _onCompleted.Invoke(Id);
         }
     }
+
+    internal sealed class InFlightRequest_Upstream : IDisposable
+    {
+        internal InFlightRequest_Upstream(string id, CancellationToken token, int timeout, Action<string> onCompleted)
+        {
+            this.Id = id;
+            this.Waiter = new TaskCompletionSource<Msg>();
+            this.onCompleted = onCompleted;
+            this.tokenSource = token == CancellationToken.None
+                ? new CancellationTokenSource()
+                : CancellationTokenSource.CreateLinkedTokenSource(token);
+
+            this.tokenRegistration = this.tokenSource.Token.Register(() =>
+            {
+                if (timeout > 0)
+                    this.Waiter.TrySetException(new NATSTimeoutException());
+
+                this.Waiter.TrySetCanceled();
+            });
+
+            if (timeout > 0)
+                this.tokenSource.CancelAfter(timeout);
+        }
+
+        public string Id { get; }
+        public TaskCompletionSource<Msg> Waiter { get; }
+        public CancellationToken Token => tokenSource.Token;
+
+        private readonly Action<string> onCompleted;
+        private readonly CancellationTokenSource tokenSource;
+        private CancellationTokenRegistration tokenRegistration;
+
+        public void Dispose()
+        {
+            this.tokenRegistration.Dispose();
+            this.tokenSource?.Dispose();
+            this.onCompleted?.Invoke(this.Id);
+        }
+    }
+
 }

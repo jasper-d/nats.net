@@ -28,7 +28,6 @@ namespace MicroBenchmarks
     public class InFlightRequestBenchmark
     {
         private static void OnCompleted(string _) { }
-
         private static CancellationToken _ct = new CancellationTokenSource().Token;
 
         [Params(0, 999_999)]
@@ -43,11 +42,31 @@ namespace MicroBenchmarks
             request.Dispose();
             return id;
         }
+
+        [BenchmarkCategory("DefaultToken")]
+        [Benchmark(Baseline = true)]
+        public string InFlightRequest_Upstream() {
+            var request = new InFlightRequest_Upstream("a", default, Timeout, OnCompleted);
+            var id = request.Id;
+            request.Dispose();
+            return id;
+        }
+
         [BenchmarkCategory("ClientToken")]
         [Benchmark]
-        public string InFlightRequestClientToken()
+        public string InFlightRequest_ClientToken()
         {
             var request = new InFlightRequest("a", _ct, Timeout, OnCompleted);
+            var id = request.Id;
+            request.Dispose();
+            return id;
+        }
+
+        [BenchmarkCategory("ClientToken")]
+        [Benchmark(Baseline = true)]
+        public string InFlightRequest_ClientToken_Upstream()
+        {
+            var request = new InFlightRequest_Upstream("a", _ct, Timeout, OnCompleted);
             var id = request.Id;
             request.Dispose();
             return id;

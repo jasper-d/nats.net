@@ -83,52 +83,6 @@ namespace UnitTests.Internals
             Assert.Matches("[A-z0-9-_]{22}", result);
         }
 
-        [Fact]
-        public void GetNextNuid_PrefixRenewed()
-        {
-            // Arrange
-            var increment = 100U;
-            var maxSequential = 0x1000_0000_0000_0000UL - increment - 1;
-            var nuid = new Nuid(RandomNumberGenerator.Create(), maxSequential, increment);
-
-            // Act
-            var firstNuid = nuid.GetNext().Substring(0, 12);
-            var secondNuid = nuid.GetNext().Substring(0, 12);
-
-            // Assert
-            Assert.NotEqual(firstNuid, secondNuid);
-        }
-
-        [Fact]
-        public void GetNextNuid_PrefixAsExpected()
-        {
-            // Arrange
-            var rngBytes = new byte[12] { 0, 1, 2, 3, 4, 5, 6, 7, 11, 253, 254, 255 };
-            var rng = new ControlledRng(new Queue<byte[]>(new byte[][] { rngBytes, rngBytes }));
-
-            var nuid = new Nuid(rng);
-
-            // Act
-            var prefix = nuid.GetNext().Substring(0, 12);
-
-            // Assert
-            Assert.Equal("ABCDEFGHL9-_", prefix);
-        }
-
-        [Fact]
-        public void NuidInitialization_RngInvokedOnce()
-        {
-            // Arrange
-            var rngBytes = new byte[12] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
-            var rng = new ControlledRng(new Queue<byte[]>(new[] { rngBytes, rngBytes }));
-
-            // Act
-            var nuid = new Nuid(rng); ;
-
-            // Assert
-            Assert.Equal(2, rng.GetBytesInvocations);
-
-        }
         
         [Fact]
         public void GetNextNuid_NuidsAreUnique()

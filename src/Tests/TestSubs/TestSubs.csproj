@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFrameworks>net46;netcoreapp3.1</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\NATS.Client\NATS.Client.csproj" />
+      <ProjectReference Include="..\IntegrationTests\IntegrationTests.csproj" />
+    </ItemGroup>
+
+</Project>
